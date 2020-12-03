@@ -6,10 +6,8 @@ import random
 class HANGMAN:
     
     def __init__(self, word=None, attempts=None):
-
         self.word = word.lower() if word else self._selectRandomWord()
         self.remainingAttempts = attempts if attempts else self._getInitialRemainingAttempts()
-
         self.remainingLetters = list(self.word)
         self.allGuesses = []
         self.correctGuesses = []
@@ -24,7 +22,6 @@ class HANGMAN:
     def playGame(self):
         
         while self.remainingAttempts > 0 and len(self.remainingLetters) > 0:
-            
             print('Unknown Word: {}'.format(self.maskedWord))
             print('Current Available Attempts: {}'.format(self.remainingAttempts))
             

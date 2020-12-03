@@ -9,9 +9,16 @@ class MANAGER:
         self.binaryOptions = ['Yes', 'No']
         self.gamesPlayed = 0
         self.playAgain = True
+        self.gameSelectionIntroductionMessage = 'Game Choices:'
         self.gameSelectionMessage = 'Select The Number Of The Game You Want To Play: '
+        self.loadingGameMessage = 'Loading up {}...'
+        self.playAgainIntroductionMessage = 'Would you like to play another game?'
         self.playAgainSelectionMessage = 'Select The Number To Decide Whether To Play Again: '
+        self.playAgainYesMessage = 'Onward! More games lies ahead...'
+        self.playAgainNoMessage = 'Thank you for playing, goodbye.'
+        self.displayResultsIntroductionMessage = 'Would you like to see your record?'
         self.displayResultsSelectionMessage = 'Select The Number To Decide Whether To View Results: '
+        self.displayResultsMessage = 'Your record for {} is: {}'
         self.incorrectSelectionMessage = 'Please select an integer between 1-{}'
         
         self._initializeSetup()
@@ -21,22 +28,26 @@ class MANAGER:
     def _initializeSetup(self):
 
         self.gameOptions = [key for key in self.gameMapping]
-        self.tracker = {gameOption: {'Wins':0, 'Losses':0} for gameOption in self.gameOptions}
+        self.tracker = {gameOption: {'win':0, 'loss':0, 'played':0} for gameOption in self.gameOptions}
 
 
     # reusable selection options function
-    def _displaySelectionOptions(self, items):
+    def _displaySelectionOptions(self, selectionIntroductionMessage, items):
+
+        print()
+        print(selectionIntroductionMessage)
 
         for i, item in enumerate(items):
             print('{}. {}'.format(i+1, item))
+
+        print()
 
     
     # reusable check correct selection function
     def _checkCorrectSelection(self, selectionMessage, items):
 
-        selection = input(selectionMessage)
-
         try:
+            selection = input(selectionMessage)
             selection = int(selection)
 
             if selection in range(1, len(items)+1):
@@ -53,11 +64,9 @@ class MANAGER:
     # initiate game selection
     def _initiateGameSelection(self):
 
-        print('\nGame Choices:')
-        self._displaySelectionOptions(items=self.gameOptions)
+        self._displaySelectionOptions(selectionIntroductionMessage=self.gameSelectionIntroductionMessage, items=self.gameOptions)
 
         while True:
-                
             selection = self._checkCorrectSelection(selectionMessage=self.gameSelectionMessage, items=self.gameOptions)
 
             if selection:
@@ -67,17 +76,33 @@ class MANAGER:
     # initiate play again selection
     def _initiatePlayAgainSelection(self):
 
-        print('\nWould you like to play another game?')
-        self._displaySelectionOptions(items=self.binaryOptions)
+        self._displaySelectionOptions(selectionIntroductionMessage=self.playAgainIntroductionMessage, items=self.binaryOptions)
 
         while True:
-            
             selection = self._checkCorrectSelection(selectionMessage=self.playAgainSelectionMessage, items=self.gameOptions)
 
             if selection:
-                print('Onward! More games lies ahead...') if selection == 1 else print('Thank you for playing, goodbye.')
-                self.playAgain = True if selection == 1 else False
+                print(self.playAgainYesMessage) if self.binaryOptions[selection-1]=='Yes' else print(self.playAgainNoMessage)
+                self.playAgain = True if self.binaryOptions[selection-1]=='Yes' else False
                     
+                return
+
+
+    # track/record/calculate results 
+    def _initiateResultsSelection(self):
+
+        self._displaySelectionOptions(selectionIntroductionMessage=self.displayResultsIntroductionMessage, items=self.binaryOptions)
+                
+        while True:
+            selection = self._checkCorrectSelection(selectionMessage=self.displayResultsSelectionMessage, items=self.binaryOptions)
+                
+            if selection:
+                                
+                if self.binaryOptions[selection-1]=='Yes':
+                    print()
+                    for i in self.gameOptions:
+                        print(self.displayResultsMessage.format(i, self.tracker[i]))
+
                 return
 
 
@@ -91,39 +116,17 @@ class MANAGER:
 
             if self.playAgain:
                 gameNumber = self._initiateGameSelection()
-                print('Loading up {}...'.format(self.gameOptions[gameNumber-1]))
+                print(self.loadingGameMessage.format(self.gameOptions[gameNumber-1]))
                 self.playGame(game=self.gameOptions[gameNumber-1])
 
-        self._displayResults()
+        self._initiateResultsSelection()
         
         
     # initializes game/ track results       
     def playGame(self, game):
 
         x = self.gameMapping[game].playGame()
-
-        if x['win'] == True:
-            self.tracker[game]['Wins'] += 1
-        else:
-            self.tracker[game]['Losses'] += 1
-
+        self.tracker[game]['played'] += 1
+        self.tracker[game]['win'] += 1 if x['win'] else 0
+        self.tracker[game]['loss'] = self.tracker[game]['played'] - self.tracker[game]['win']
         self.gamesPlayed += 1
-    
-       
-    # track/record/calculate results 
-    def _displayResults(self):
-                
-        print('\nWould you like to see your record?')
-        self._displaySelectionOptions(items=self.binaryOptions)
-                
-        while True:
-            selection = self._checkCorrectSelection(selectionMessage=self.displayResultsSelectionMessage, items=self.gameOptions)
-                
-            if selection:
-                                
-                if selection==1:
-                    print()
-                    for i in self.gameOptions:
-                        print('Your record for', i, 'is:', self.tracker[i])
-
-                return
